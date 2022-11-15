@@ -16,6 +16,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"html"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -117,6 +118,10 @@ func (iv *invoicer) getInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	iv.db.Where("invoice_id = ?", i1.ID).Find(&i1.Charges)
+	for i:=0; i<len(i1.Charges); i++ {
+		i1.Charges[i].Type = html.EscapeString(i1.Charges[i].Type)
+		i1.Charges[i].Description=html.EscapeString(i1.Charges[i].Description)
+	}							  
 	jsonInvoice, err := json.Marshal(i1)
 	if err != nil {
 		httpError(w, r, http.StatusInternalServerError, "failed to retrieve invoice id %d: %s", vars["id"], err)
