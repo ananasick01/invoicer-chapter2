@@ -204,8 +204,36 @@ func (iv *invoicer) deleteInvoice(w http.ResponseWriter, r *http.Request) {
 	al.log(r)
 }
 
+const defaulUser string = "samatha"
+const defaultPass string = "1n3cur3"
+
+func requestBasicAuth (w http.ResponserWriter){
+	w.Header().Set("WWW-Authenticate", `Basic realm="invoicer"`)
+	w.WriteHeader(401)
+	w.Write([]byte(`please authenticate`))
+}
+
 func (iv *invoicer) getIndex(w http.ResponseWriter, r *http.Request) {
+	if len (r.Header.Get("Authorization"))<8 || r.Header.Get("Authorization")[0:5] !=`Basic` {
+		requestBasicAuth(w)
+		return
+	}
+	authbyts,err := base64.StdEncoding.DecodeString(r.Hteader.Get("Authorization")[6:])
+	if err!= nil{
+		requestBasicAuth(w)
+		return
+	}
+	
+	authstr :=fmt.Sprintf("%s", authbyts)
+	username := authatr[0:strings.Index(authstr,":")]
+	password := authatr[strings.Index(authstr,":")+1]
+	if username !=defaulUser && password != defaultPass{
+		requestBasicAuth(w)
+		return
+	}
+					    
 	w.Header().Add("Content-Security-Policy", "default-src 'self';")
+	w.Header().Add("X-Frame-Options", "SAMEORIGIN")
 	log.Println("serving index page")
 	w.Write([]byte(`
 <!DOCTYPE html>
